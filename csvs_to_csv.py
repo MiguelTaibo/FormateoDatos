@@ -23,7 +23,6 @@ def getFilePath(termometro,folder="Data"):
         return file
     return ""
 
-
 if __name__=="__main__":
 
     ap = argparse.ArgumentParser()
@@ -32,46 +31,22 @@ if __name__=="__main__":
 
     args = vars(ap.parse_args())
 
-    df = pd.DataFrame()
-
-
-
-    list = ["bomba", "zona bomba", "repeat"]
-    switcher = {
-        "bomba" : ["FC1010"],
-        "zona bomba" : ["FC1010", "TI1200", "TI1210", "TI1220"],
-        "repeat" : False
-    }
-
-
-    msg = "Selecciona los termometros que quiere ver: \n (0) bomba \n (1) zona bomba \n (2) repeat"
-    termometros=False
-    while(not termometros):
-        print(msg)
-        try:
-            termometros = switcher[list[int(input())]]
-        except:
-            print("No te he entendido bien")
-             
-
-
     first = True
 
-    with pd.ExcelWriter(args['folder']+'/output.xlsx') as writer:
+    df = pd.DataFrame()
 
-        for termometro in termometros:
-            print(termometro)
+    termometros = getTermometros(args['folder']);
 
-            file_name = getFilePath(termometro, args['folder'])
-            temp_df = pd.read_csv(file_name, error_bad_lines=False, warn_bad_lines=False)
+    for termometro in termometros:
+        print(termometro)
 
-            if (first):
-                first=False
-                df["TimeString"] = temp_df["TimeString"]
-                df["Time_ms"]=temp_df["Time_ms"]
-            df[termometro]=temp_df['VarValue']
+        file_name = getFilePath(termometro, folder = args['folder'])
+        temp_df = pd.read_csv(file_name, error_bad_lines=False, warn_bad_lines=False)
 
-        df.to_excel(writer, index = False, sheet_name = "data", )
+        if (first):
+            first=False
+            df["TimeString"] = temp_df["TimeString"]
+            df["Time_ms"]=temp_df["Time_ms"]
+        df[termometro]=temp_df['VarValue']
 
-
-    writer.save()
+    df.to_csv(args['folder']+"/medidas_termometros1.csv")
